@@ -185,7 +185,6 @@ $(document).on("click", ".App_shopItemButton_23FO1", function () {
   calculateTotalAmount();
 });
 
-// Hàm để thêm sản phẩm vào giỏ hàng
 function addToCart(productId) {
   // Gọi API add to cart với ID của sản phẩm
   $.ajax({
@@ -213,7 +212,6 @@ $(document).on(
     quantityElement.text(newQuantity);
     calculateTotalAmount();
 
-    // Gọi AJAX để cập nhật giỏ hàng
     var ajaxRequest = $.ajax({
       url: "https://sneaker-zrdo.onrender.com/api/cart/add/" + productId,
       method: "POST",
@@ -235,49 +233,30 @@ $(document).on(
     var productId = cartItem.data("id");
     var quantityElement = cartItem.find(".App_cartItemCountNumber_1Evq9");
     var currentQuantity = parseInt(quantityElement.text());
-
-    // Kiểm tra nếu số lượng hiện tại là 1, không thể giảm thêm
     if (currentQuantity <= 1) {
       var shopItemDiv = $('.App_shopItem_3FgVU[data-id="' + productId + '"]');
-      var inactiveDiv = shopItemDiv.find(".App_inactive_19f0W"); // Sử dụng .find() thay vì querySelector
+      var inactiveDiv = shopItemDiv.find(".App_inactive_19f0W");
       var addToCartButton =
         '<div class="App_shopItemButton_23FO1"><p>ADD TO CART</p></div>';
       inactiveDiv.replaceWith(addToCartButton);
+
       cartItem.remove();
+      calculateTotalAmount();
       if ($(".cartProduct").children().length === 0) {
-        // Nếu không có thẻ con nào, thêm thẻ mới
         $(".cartProduct").append(
           '<div class="App_cartEmpty_xgWCN"><p class="App_cartEmptyText_2mtqJ">Your cart is empty.</p></div>'
         );
+        var totalPriceElement = $(".App_cardTitleAmount_17QFR");
+        totalPriceElement.text("$0.00");
       }
-      calculateTotalAmount();
-      // Gọi AJAX để xóa mục khỏi giỏ hàng
-      $.ajax({
-        url: "https://sneaker-zrdo.onrender.com/api/cart/remove/" + productId,
-        method: "POST",
-        dataType: "json",
-        success: function (response) {
-          // Xóa mục khỏi giao diện
-        },
-        error: function (xhr, status, error) {
-          // Xử lý lỗi nếu có
-          console.error(status, error);
-        },
-      });
-      return;
     }
-
-    // Gọi AJAX để giảm số lượng trong giỏ hàng
+    var newQuantity = currentQuantity - 1;
+    quantityElement.text(newQuantity);
+    calculateTotalAmount();
     var ajaxRequest = $.ajax({
       url: "https://sneaker-zrdo.onrender.com/api/cart/remove/" + productId,
       method: "POST",
       dataType: "json",
-    });
-    var newQuantity = currentQuantity - 1;
-    quantityElement.text(newQuantity);
-
-    ajaxRequest.done(function (response) {
-      // Cập nhật số lượng trên giao diện sau khi AJAX thành công
     });
 
     ajaxRequest.fail(function (xhr, status, error) {
@@ -338,7 +317,7 @@ function calculateTotalAmount() {
     if (!isNaN(price) && !isNaN(quantity)) {
       totalAmount += price * quantity;
     }
-    var totalPriceElement = $(".App_cardTitleAmount_17QFR");
+
     var totalPriceElement = $(".App_cardTitleAmount_17QFR");
 
     totalPriceElement.text("$" + totalAmount.toFixed(2));
